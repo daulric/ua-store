@@ -1,0 +1,41 @@
+datasource db {
+  provider = "postgresql"
+  url = env("DB_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  userid   Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  username String
+  orders    Order[] @relation("UserOrders") // Changed to orders for one-to-many
+}
+
+model Order {
+  orderid String @id @default(uuid())
+  userid  Int
+  items   Json[]
+  is_checkedout Boolean @default(false)
+
+  account Account @relation("UserOrders", fields: [userid], references: [userid])
+  Receipt Receipt[] @relation("OrderReceipt")
+}
+
+model Product {
+  productid Int @id @default(autoincrement())
+  ProductName String
+  Description String @default("No Info")
+  Quantity Int
+  Price Decimal @db.Decimal(9, 2)
+}
+
+model Receipt {
+  receiptid String @id @default(uuid())
+  orderid String
+  order Order @relation("OrderReceipt", fields: [orderid], references: [orderid])
+}
